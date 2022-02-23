@@ -1,0 +1,18 @@
+<RCC>
+  <qresource prefix="/plugins/pfafsteterTools">
+    <file>icon.png</file>
+  </qresource>
+  <qresource prefix="/plugins/pfafstetertools/">
+    <file>images/acumula.png</file>
+    <file>images/downstream.png</file>
+    <file>images/upstream.png</file>
+    <file>images/codigo.png</file>
+    <file>images/iconPfaf.png</file>
+    <file>images/iconPfaf80.png</file>
+    <file>images/jusante.PNG</file>
+    <file>images/montante.png</file>
+    <file>images/montante2.png</file>
+    <file>images/otto.jpg</file>
+    <file>images/otto64.png</file>
+  </qresource>
+</RCC>
