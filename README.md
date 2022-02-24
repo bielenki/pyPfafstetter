@@ -2,12 +2,12 @@
 A new tool implemented with pyqgis to coding streams by Pfafstetter Method
 
 
-**pyPfafstetterTools
+** pyPfafstetterTools
 A QGIS Plugin Toolbar to streams coding by Pfafstetter Method
 
  
 
-**Drainage Network ComboBox 
+** Drainage Network ComboBox 
 
 ![bar1](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar1.png?raw=true)
  
