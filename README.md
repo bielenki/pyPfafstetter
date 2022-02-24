@@ -25,22 +25,27 @@ The Otto Pfafstetter Coding script performs the coding of the drainage network s
 **Button upStream selection tool**
 ![button2](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button2.png?raw=true)
   
- ![bar4](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar4.png?raw=true)
+![bar4](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar4.png?raw=true)
  
 From this button, and with a selected feature, the tool selects all the features of the layer that are upstream.
  
 **Button downStream selection tool**
+![button3](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button3.png?raw=true)
  
+![bar5](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar5.png?raw=true)
  
 From this button, and with a selected feature, the tool selects all the features of the layer that are downstream, ie the way to the outfall.
  
+**Button accumulation tool**
+![button4](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button4.png?raw=true)
 
-
-Button accumulation tool
- 
- 
+![bar6](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar6.png?raw=true)
+  
 It accumulates a given attribute from upstream to downstream, adding a new layer to the project that is a copy of the drainage network layer added to a field in the attribute table that is the accumulated value of the attribute selected from the Attribute combobox. The added field receives the name of the selected field plus the suffix “_Accum”.
-Attribute ComboBox 
+
+**Attribute ComboBox**
+
+![bar7](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar7.png?raw=true)
  
 From this combobox select the attribute table field that you want to accumulate with the accumulation function.
 
