@@ -19,6 +19,8 @@ From this combobox, select the layer of the drainage network on which the toolba
 ![bar3](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar3.png?raw=true)
  
 From this button you can access the Pfafstetter Tools Dialog Box to setup de inputs for encoding script.
+
+![dialog](https://github.com/bielenki/pyPfafstetter/blob/main/fig/dialog.png?raw=true)
  
 The Otto Pfafstetter Coding script performs the coding of the drainage network sections. When executing the tool, the fields [Pfaf], [Mainstreams], [Springs] and [cocurso] are added to the attribute table.
 
@@ -49,3 +51,10 @@ It accumulates a given attribute from upstream to downstream, adding a new layer
  
 From this combobox select the attribute table field that you want to accumulate with the accumulation function.
 
+**Hydronet Check and Flip Plugin**
+
+![button5](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button5.png?raw=true) 
+ 
+In additional the Hydronet Check and Flip plugin by Jeronimo Carranza was added to toolbar. This tool verify the network consistency and flip the arcs against to flow to selected outfall.
+
+![bar8](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar8.png?raw=true)
