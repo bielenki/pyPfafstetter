@@ -7,9 +7,9 @@ A QGIS Plugin Toolbar to streams coding by Pfafstetter Method
 
  
 
-Drainage Network ComboBox 
+**Drainage Network ComboBox 
 
-![bar1](https://github.com/bielenki/pyPfafstetter/Fig/bar1.png?raw=true)
+![bar1](https://github.com/bielenki/pyPfafstetter/blob/main/Fig/bar1.png?raw=true)
  
 From this combobox, select the layer of the drainage network on which the toolbar tasks will be executed.
 Button for encoding by Otto Pfafstetter
