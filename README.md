@@ -18,17 +18,18 @@ From this combobox, select the layer of the drainage network on which the toolba
 
 ![bar3](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar3.png?raw=true)
  
- 
 From this button you can access the Pfafstetter Tools Dialog Box to setup de inputs for encoding script.
  
 The Otto Pfafstetter Coding script performs the coding of the drainage network sections. When executing the tool, the fields [Pfaf], [Mainstreams], [Springs] and [cocurso] are added to the attribute table.
 
-Button upStream selection tool
+**Button upStream selection tool**
+![button2](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button2.png?raw=true)
   
+ ![bar4](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar4.png?raw=true)
  
 From this button, and with a selected feature, the tool selects all the features of the layer that are upstream.
  
-Button downStream selection tool
+**Button downStream selection tool**
  
  
 From this button, and with a selected feature, the tool selects all the features of the layer that are downstream, ie the way to the outfall.
