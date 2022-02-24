@@ -1,0 +1,23 @@
+<RCC>
+  <qresource prefix="/plugins/pfafstetterTools">
+    <file>icon.png</file>
+  </qresource>
+  <qresource prefix="/plugins/pfafstettertools/">
+    <file>images/iconPfaf200.png</file>
+    <file>images/check.png</file>
+    <file>images/FlowAccumulation.png</file>
+    <file>images/coding.png</file>
+    <file>images/newacumula.png</file>
+    <file>images/acumula.png</file>
+    <file>images/downstream.png</file>
+    <file>images/upstream.png</file>
+    <file>images/codigo.png</file>
+    <file>images/iconPfaf.png</file>
+    <file>images/iconPfaf80.png</file>
+    <file>images/jusante.PNG</file>
+    <file>images/montante.png</file>
+    <file>images/montante2.png</file>
+    <file>images/otto.jpg</file>
+    <file>images/otto64.png</file>
+  </qresource>
+</RCC>
