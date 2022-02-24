@@ -52,7 +52,6 @@ It accumulates a given attribute from upstream to downstream, adding a new layer
 From this combobox select the attribute table field that you want to accumulate with the accumulation function.
 
 **Hydronet Check and Flip Plugin**
-
 ![button5](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button5.png?raw=true) 
  
 In additional the Hydronet Check and Flip plugin by Jeronimo Carranza was added to toolbar. This tool verify the network consistency and flip the arcs against to flow to selected outfall.
