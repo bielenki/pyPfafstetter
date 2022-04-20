@@ -21,18 +21,22 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QPushButton, QLabel, QDialogButtonBox
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsFeaturePickerWidget
-from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameters, QgsVectorFileWriter, QgsExpression, QgsSpatialIndex
+from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameters, QgsVectorFileWriter, QgsExpression, QgsSpatialIndex, QgsField
 from qgis.core import QgsVectorLayer, QgsProject, QgsProcessingUtils, QgsMessageLog, Qgis, QgsFeatureRequest, QgsProcessingAlgorithm, QgsProcessingFeatureSource, QgsWkbTypes, QgsRectangle
- 
+from qgis.core import edit
+import sys
+
 import qgis.utils
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .pfafsteterTools_dialog import pfafsteterDialog
+
+from .incremental_dialog import incrementalDialog
 import os.path
 from .pfafsteter_provider import NetworkToolsProvider
 from .networkConstructor import networkConst
@@ -61,23 +65,10 @@ def COC (pfafstetter):
             break
         i=i-1
     return (cocursodag)
-    
-def COC_jusante (pfafstetter):
-    # retorna uma lista de todos os cocursos a jusante
-    lista=[]
-    x=0
-    for cont in range(len(pfafstetter)):
-        if int(pfafstetter) % 2 == 0:
-            lista.append(pfafstetter)
-            x=+x
-            pfafstetter=pfafstetter[:len(pfafstetter)-1]
-        else:
-            pfafstetter=pfafstetter[:len(pfafstetter)-1]
-        if pfafstetter=='':
-            break
-    return (lista)
-    
-    
+
+
+
+
 def query_jusante (cobac, lista):
     Ncobacia = "Pfaf"
     Ncocurso = "cocurso"
@@ -228,7 +219,7 @@ def classif_rios(df):
     dfTlist.sort_values(2,ascending=True, inplace=True)
     Tlist=np.array(dfTlist)
     cont=0
-    
+
     for rows in Tlist:
         valor = df_join.loc[df_join['fromnode'] == Tlist[cont][1]]['pfafstetter'].max()
         #df_join.set_value(df_join.loc[df_join['rid'] == Tlist[cont][0]]['pfafstetter'].index,'pfafstetter',str(int(valor)))
@@ -306,16 +297,16 @@ class pfafsteter:
         # Declare instance attributes
         self.actions = []
         #self.menu = self.tr(u'&Pfafstetter Tools')
-        
-        
+
+
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
     def initProcessing(self):
-        
+
         self.provider = NetworkToolsProvider()
         QgsApplication.processingRegistry().addProvider(self.provider)
-    
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -366,34 +357,34 @@ class pfafsteter:
         return action
     def hello(self):
         self.iface.messageBar().pushMessage(u'Welcome to Otto Pfafstetter Conding Tools', level=Qgis.Info, duration=3)
-        
+
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
         self.toolBar = self.iface.addToolBar("Pfafstetter Tools")
         self.toolBar.setObjectName("pfafstetterTools")
-        
+
         icon_path = ':/plugins/pfafstettertools/images/newacumula.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Pfafstetter Tool'),
             callback=self.hello,
             parent=self.iface.mainWindow())
-        
+
         drainageLabel=QLabel(self.toolBar)
         drainageLabel.setText("Drainage Network: ")
         self.toolBar.addWidget(drainageLabel)
 
         self.drainageCombo = QgsMapLayerComboBox()
         self.fieldCombo = QgsFieldComboBox()
-        
-        
+
+
         self.drainageCombo.setFixedWidth(200)
         self.drainageCombo.setFilters(QgsMapLayerProxyModel.LineLayer)
         self.toolBar.addWidget(self.drainageCombo)
         self.drainageCombo.setToolTip("Select the drainage network")
 
-        self.toolBar.addSeparator() 
-        
+        self.toolBar.addSeparator()
+
         icon_path = ':/plugins/pfafstettertools/images/otto64.png'
         self.add_action(
             icon_path,
@@ -422,44 +413,52 @@ class pfafsteter:
             callback=self.funAccum,
             parent=self.iface.mainWindow())
 
-        
+
         self.fieldCombo.setFixedWidth(200)
         self.fieldCombo.setFilters(QgsFieldProxyModel.Numeric)
         self.toolBar.addWidget(self.fieldCombo)
         self.fieldCombo.setToolTip("Select the attribute to accumulation")
-        
+
         layerField = self.drainageCombo.currentLayer()
         self.fieldCombo.setLayer(layerField)
-        
+
         icon_path = ':/plugins/pfafstettertools/images/check.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Hydronet Check & Flip (by Jeronimo Carranza). \nSelect prior the outfall arcs in the active layer.'),
             callback=self.checkandflip,
             parent=self.iface.mainWindow())
-        
+
+        icon_path = ':/plugins/pfafstettertools/images/Incremental.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'Incremental Area Tool'),
+            callback=self.incremental,
+            parent=self.iface.mainWindow())
+
+
         self.drainageCombo.layerChanged.connect(self.drainageChange)
 
         # will be set False in run()
         self.first_start = True
-    
+
     def drainageChange(self):
         self.fieldCombo.setLayer(self.drainageCombo.currentLayer())
         self.iface.setActiveLayer(self.drainageCombo.currentLayer())
-        
-        
+
+
     def cbIDChange(self):
         self.dlg.cbFeatureOutlet.setDisplayExpression(self.dlg.cbID.currentField())
-     
+
     def selectFeature(self):
         sLayer = self.drainageCombo.currentLayer()
         sLayer.removeSelection()
         sFeatureID = self.dlg.cbFeatureOutlet.feature().id()
         sLayer.select(sFeatureID)
-        
-        
+
+
         #return outletID
-        
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         #del pfafsteterTools
@@ -473,9 +472,9 @@ class pfafsteter:
         if self.first_start == True:
             self.first_start = False
         self.dlg = pfafsteterDialog()
-        
+
         self.dlg.labelDN.setText(self.drainageCombo.currentLayer().name())
-        
+
         self.dlg.pbCoding.button(QDialogButtonBox.Ok).setText("Coding")
         self.dlg.cbLenght.setFilters(QgsFieldProxyModel.Numeric)
         self.dlg.cbArea.setFilters(QgsFieldProxyModel.Numeric)
@@ -483,7 +482,7 @@ class pfafsteter:
         self.dlg.cbArea.setLayer(self.drainageCombo.currentLayer())
         self.dlg.cbID.setFilters(QgsFieldProxyModel.Numeric)
         self.dlg.cbID.setLayer(self.drainageCombo.currentLayer())
-        
+
         self.dlg.cbFeatureOutlet.setLayer(self.drainageCombo.currentLayer())
         self.dlg.cbFeatureOutlet.setDisplayExpression(self.dlg.cbID.currentField())
         self.dlg.cbID.fieldChanged.connect(self.cbIDChange)
@@ -492,56 +491,56 @@ class pfafsteter:
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        
+
         # See if OK was pressed
         if result:
             parameters={}
             streamLayer = self.drainageCombo.currentLayer()
             parameters['streams'] = streamLayer
-            
+
             idField = self.dlg.cbID.currentField()
             parameters['id'] = idField
-            
+
             lenghtField = self.dlg.cbLenght.currentField()
             parameters['lenght'] = lenghtField
-            
+
             areaField = self.dlg.cbArea.currentField()
             parameters['area'] = areaField
             context = QgsProcessingContext()
             context.setProject(QgsProject.instance())
             feedback = QgsProcessingFeedback()
-            
+
             results = networkConst.network(self, parameters, context, feedback)
-            
+
             newNet = QgsProcessingUtils.mapLayerFromString(results['Network'], context)
             name = self.iface.activeLayer().name()
             newName = name + "_Cod1"
             path = self.iface.activeLayer().dataProvider().dataSourceUri()
             newPath1 = path.replace(name,newName)
             QgsVectorFileWriter.writeAsVectorFormat( newNet , newPath1, "UTF-8", self.iface.activeLayer().crs() , "ESRI Shapefile")
-            
+
             newNetwork = QgsVectorLayer(newPath1, "Net", "ogr")
-            
+
             activeLayer = self.iface.activeLayer()
-            
-            prov = activeLayer.dataProvider() 
+
+            prov = activeLayer.dataProvider()
             idxOutlet = prov.fieldNameIndex(idField)
-            
+
             selection = activeLayer.selectedFeatures()
             #iterate over selected features
             for feat in selection:
                 outletID = feat.attributes()[idxOutlet]
-            
-           
-            dataP = newNetwork.dataProvider() 
-            
+
+
+            dataP = newNetwork.dataProvider()
+
             field_idx1 = dataP.fieldNameIndex('fromode')
             field_idx2 = dataP.fieldNameIndex('tonode')
             field_idx3 = dataP.fieldNameIndex('rid')
-            
+
             outlet = int(0)
             expression1 = parameters['id']+"="+str(outletID)
-            
+
             selection=newNetwork.getFeatures(QgsFeatureRequest().setFilterExpression(expression1))
             newNetwork.startEditing()
             for feat in selection:
@@ -554,7 +553,7 @@ class pfafsteter:
                 #atributos = feat.attributes()
             newNetwork.commitChanges()
             #QgsMessageLog.logMessage("valores   " + str(atributos[field_idx1]) +"  "+ str(atributos[field_idx2]), 'MyPlugin', Qgis.Info)
-                      
+
             columnFields = ['fromnode','tonode', parameters['id'], parameters['lenght'], parameters['area'], 'rid', 'COBACIA']
             dataP = newNetwork.dataProvider()
             fieldsNet = dataP.fields()
@@ -563,10 +562,10 @@ class pfafsteter:
                 if field.name() not in columnFields:
                     index = dataP.fieldNameIndex(field.name())
                     columnFieldsDrop.append(index)
-                        
+
             dataP.deleteAttributes(columnFieldsDrop)
             newNetwork.updateFields()
-           
+
             parameters['streams'] = newNetwork
             CRS = activeLayer.crs().authid()
             WKBType = activeLayer.wkbType()
@@ -577,14 +576,14 @@ class pfafsteter:
             acc = accumulation.accumPath(self, parameters, context, feedback)
             parameters['streams'] = acc
             preNet = upDist.upDistCalc(self, parameters, context, feedback)
-            
+
             name = self.iface.activeLayer().name()
             newName = name + "_Cod"
             path = self.iface.activeLayer().dataProvider().dataSourceUri()
             newPath = path.replace(name,newName)
 
             netCod = QgsVectorFileWriter.writeAsVectorFormat(preNet, newPath, "UTF-8", self.iface.activeLayer().crs() , "ESRI Shapefile")
-            
+
             pfaf_inicial = self.dlg.leCodeI.text()
 
             rio = newPath.replace('shp','dbf')
@@ -690,25 +689,25 @@ class pfafsteter:
             db.close()
             appendcol2dbf(dbf_in,dbf_out,col_name,col_spec,col_data,replace=True)
 
-            
+
             vlayer = QgsVectorLayer(newPath, "NetCode", "ogr")
             QgsProject.instance().addMapLayer(vlayer)
-            
+
             del dataP
-            del newNetwork 
-            QgsVectorFileWriter.deleteShapeFile(newPath1)
-            
+            del newNetwork
+
+
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
     def funAccum(self):
             """Run method that performs all the real work"""
-            
+
             if self.first_start == True:
                 self.first_start = False
             activeLayer = self.iface.activeLayer()
             accumField = self.fieldCombo.currentField()
-            
+
             coluna=accumField+"_Accum"
             dfp=gpd.read_file(activeLayer.source())
             dfp[coluna]=0
@@ -719,63 +718,63 @@ class pfafsteter:
                 soma = dfp_sel[accumField].sum()
                 dfp.loc[index, coluna]= soma
                 del dfp_sel
-            
+
             output=activeLayer.source().replace(".shp","_Accum.shp")
             dfp.to_file(driver = 'ESRI Shapefile', filename = output)
             newlayer = QgsVectorLayer(output, "Accumulation" , "ogr")
             QgsProject.instance().addMapLayer(newlayer)
-            
+
             pass
-    
+
 
     def funUpStream(self):
             """Run method that performs all the real work"""
-            
+
             if self.first_start == True:
                 self.first_start = False
             activeLayer = self.iface.activeLayer()
-            
+
             Nr_sel = activeLayer.selectedFeatureCount()
             if Nr_sel==0:
                 self.iface.messageBar().pushMessage(u'It is necessary select one stream', level=Qgis.Info, duration=3)
             elif Nr_sel>1:
                 self.iface.messageBar().pushMessage(u'It is necessary select just one stream', level=Qgis.Info, duration=3)
             elif Nr_sel==1:
-                prov = activeLayer.dataProvider() 
+                prov = activeLayer.dataProvider()
                 idx = prov.fieldNameIndex("Pfaf")
                 selection = activeLayer.selectedFeatures()
                 #iterate over selected features
                 for feat in selection:
                     cobacia_ini = feat.attributes()[idx]
-                    
+
                 cocurso_ini=COC(cobacia_ini)
                 NPfaf="Pfaf"
                 Ncocurso="cocurso"
                 activeLayer.removeSelection()
-                
+
                 query = """\"{0}\" >= '{1}' AND \"{2}\" LIKE '{3}%' """.format(NPfaf,cobacia_ini,Ncocurso, cocurso_ini)
                 #exp = QgsExpression(unicode(query))
                 activeLayer.selectByExpression(str(unicode(query)))
                 self.iface.actionZoomToSelected().trigger()
             pass
-            
-    
-    
-        
+
+
+
+
     def funDownStream(self):
             """Run method that performs all the real work"""
-            
+
             if self.first_start == True:
                 self.first_start = False
-            activeLayer = self.iface.activeLayer()        
-            
+            activeLayer = self.iface.activeLayer()
+
             Nr_sel = activeLayer.selectedFeatureCount()
             if Nr_sel==0:
                 self.iface.messageBar().pushMessage(u'It is necessary select one stream', level=Qgis.Info, duration=3)
             elif Nr_sel>1:
                 self.iface.messageBar().pushMessage(u'It is necessary select just one stream', level=Qgis.Info, duration=3)
             elif Nr_sel==1:
-                prov = activeLayer.dataProvider() 
+                prov = activeLayer.dataProvider()
                 idx = prov.fieldNameIndex("Pfaf")
                 selection = activeLayer.selectedFeatures()
                 #iterate over selected features
@@ -784,7 +783,7 @@ class pfafsteter:
                 cocurso_ini = COC(cobacia_ini)
                 lista_cursos = COC_jusante(cobacia_ini)
                 activeLayer.removeSelection()
-                
+
                 where_clause = QgsExpression("\"Pfaf\" <= '{}'".format(cobacia_ini))
                 lista_cocursos=[]
                 features = activeLayer.getFeatures(QgsFeatureRequest(where_clause))
@@ -792,15 +791,15 @@ class pfafsteter:
                     cobacia = feat.attributes()[idx]
                     if COC(cobacia) in lista_cursos:
                         lista_cocursos.append(COC(cobacia))
-                        
-                        
+
+
                 q=query_jusante(cobacia_ini,lista_cocursos)
-                
-                
+
+
                 activeLayer.selectByExpression(str(q))
                 self.iface.actionZoomToSelected().trigger()
             pass
-            
+
     def checkandflip(self):
         """Run method that performs all the real work
         """
@@ -901,4 +900,94 @@ class pfafsteter:
             if (xi in ylist):
                 return(True)
                 break
-        return(False)        
+        return(False)
+
+    def incrementalChange(self):
+        self.dlg.attributeCB.setLayer(self.dlg.layerCB.currentLayer())
+        self.dlg.codeCB.setLayer(self.dlg.layerCB.currentLayer())
+
+
+    def incremental(self):
+        if self.first_start == True:
+            self.first_start = False
+        self.dlg = incrementalDialog()
+
+        self.dlg.layerCB.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.dlg.layerCB.setToolTip("Select the point features layer")
+
+        self.dlg.attributeCB.setFilters(QgsFieldProxyModel.Numeric)
+        self.dlg.codeCB.setFilters(QgsFieldProxyModel.String)
+        self.dlg.attributeCB.setLayer(self.dlg.layerCB.currentLayer())
+        self.dlg.codeCB.setLayer(self.dlg.layerCB.currentLayer())
+
+        self.dlg.layerCB.layerChanged.connect(self.incrementalChange)
+        # show the dialog
+        self.dlg.show()
+        # Run the dialog event loop
+        result = self.dlg.exec_()
+
+        if result:
+            layer = self.dlg.layerCB.currentLayer()
+            layerSource = self.dlg.layerCB.currentLayer().source()
+            attributeField = self.dlg.attributeCB.currentField()
+            codeField = self.dlg.codeCB.currentField()
+            gdfUHE = gpd.read_file(layerSource)
+            gdfUHE['COB'] = ''
+            gdfUHE['COCURSO'] = ''
+            for ind, r in gdfUHE.iterrows():
+                cobacia = r[codeField]
+                gdfUHE.at[ind, 'COB'] = str(cobacia)
+                cocurso = COC(cobacia)
+                gdfUHE.at[ind, 'COCURSO'] = str(cocurso)
+            #print(gdfUHE['COB'])
+            #print(gdfUHE['COCURSO'])
+
+            gdfUHECopy = gdfUHE.copy()
+            gdfUHE['incremental']=''
+            for index, row in gdfUHECopy.iterrows():
+                cob = row['COB']
+                coc = row['COCURSO']
+                area = row[attributeField]
+                gdf = gdfUHECopy[(gdfUHECopy['COB']>cob) & (gdfUHECopy['COCURSO'].astype(str).str.startswith(coc))]
+                if gdf.empty:
+                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area
+                if len(gdf.index)==1:
+                    area2 = gdf.iloc[0]['Area']
+                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area - area2
+                if len(gdf.index)>1:
+                    aux = gdf.copy()
+                    for index2, row2 in aux.iterrows():
+                        cob2 = row2['COB']
+                        coc2 = row2['COCURSO']
+                        aux2 = aux[(aux['COB']>cob2) & (aux['COCURSO'].astype(str).str.startswith(coc2))]
+                        cond = gdf['COB'].isin(aux2['COB'])
+                        gdf.drop(gdf[cond].index, inplace = True)
+                    area3 = gdf[attributeField].sum()
+                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area - area3
+
+                layerProvider=layer.dataProvider()
+                layerProvider.addAttributes([QgsField("attrInc",QVariant.Double, '',20,6)])
+                layer.updateFields()
+                attID = layer.fieldNameIndex("attrInc")
+
+            with edit(layer):
+
+                features=layer.getFeatures()
+                #layer.startEditing()
+                #print (gdfUHE['incremental'])
+                for f in features:
+                    cobacia2 = f[codeField]
+                    #print(cobacia2)
+                    incrementalArea = gdfUHE.loc[gdfUHE['COB']==cobacia2, 'incremental'].values[0]
+                    #print(incrementalArea)
+                    fid = f.id()
+
+                    attrValue = {attID:incrementalArea}
+
+                    layerProvider.changeAttributeValues({fid : attrValue})
+                    #f['attrInc'] = incrementalArea
+                    #print(f['attrInc'])
+                    #layer.updateFeature(f)
+                #layer.commitChanges()
+            QgsProject.instance().reloadAllLayers()
+            pass

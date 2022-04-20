@@ -3,7 +3,9 @@
     <file>icon.png</file>
   </qresource>
   <qresource prefix="/plugins/pfafstettertools/">
+    <file>images/Incremental2.png</file>
     <file>images/iconPfaf200.png</file>
+    <file>images/Incremental.png</file>
     <file>images/check.png</file>
     <file>images/FlowAccumulation.png</file>
     <file>images/coding.png</file>
