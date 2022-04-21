@@ -953,7 +953,7 @@ class pfafsteter:
                     gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area
                 if len(gdf.index)==1:
                     area2 = gdf.iloc[0]['Area']
-                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area - area2
+                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = float(area - area2)
                 if len(gdf.index)>1:
                     aux = gdf.copy()
                     for index2, row2 in aux.iterrows():
@@ -963,15 +963,13 @@ class pfafsteter:
                         cond = gdf['COB'].isin(aux2['COB'])
                         gdf.drop(gdf[cond].index, inplace = True)
                     area3 = gdf[attributeField].sum()
-                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = area - area3
+                    gdfUHE.loc[gdfUHE.COB == cob, 'incremental'] = float(area - area3)
 
+            with edit(layer):
                 layerProvider=layer.dataProvider()
                 layerProvider.addAttributes([QgsField("attrInc",QVariant.Double, '',20,6)])
                 layer.updateFields()
-                attID = layer.fieldNameIndex("attrInc")
-
-            with edit(layer):
-
+                attID = layer.fields().indexFromName("attrInc")
                 features=layer.getFeatures()
                 #layer.startEditing()
                 #print (gdfUHE['incremental'])
@@ -979,14 +977,16 @@ class pfafsteter:
                     cobacia2 = f[codeField]
                     #print(cobacia2)
                     incrementalArea = gdfUHE.loc[gdfUHE['COB']==cobacia2, 'incremental'].values[0]
-                    #print(incrementalArea)
+                    print('incre = '+ str( incrementalArea))
                     fid = f.id()
 
-                    attrValue = {attID:incrementalArea}
+                    #attrValue = {attID:incrementalArea}
+                    layer.changeAttributeValue(fid, attID, incrementalArea)
 
-                    layerProvider.changeAttributeValues({fid : attrValue})
+                    #layerProvider.changeAttributeValues({fid : attrValue})
+                    #layer.updateFields()
                     #f['attrInc'] = incrementalArea
-                    #print(f['attrInc'])
+                    print('f = ' + str( f['attrInc']))
                     #layer.updateFeature(f)
                 #layer.commitChanges()
             QgsProject.instance().reloadAllLayers()
