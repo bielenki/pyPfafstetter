@@ -27,7 +27,7 @@ from qgis.PyQt.QtWidgets import QAction, QPushButton, QLabel, QDialogButtonBox
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsFeaturePickerWidget
 from qgis.core import QgsMapLayerProxyModel, QgsFieldProxyModel, QgsProcessingContext, QgsProcessingFeedback, QgsProcessingParameters, QgsVectorFileWriter, QgsExpression, QgsSpatialIndex, QgsField
 from qgis.core import QgsVectorLayer, QgsProject, QgsProcessingUtils, QgsMessageLog, Qgis, QgsFeatureRequest, QgsProcessingAlgorithm, QgsProcessingFeatureSource, QgsWkbTypes, QgsRectangle
-from qgis.core import edit
+from qgis.core import edit, QgsMultiLineString, QgsGeometry
 import sys
 
 import qgis.utils
@@ -422,12 +422,6 @@ class pfafsteter:
         layerField = self.drainageCombo.currentLayer()
         self.fieldCombo.setLayer(layerField)
 
-        icon_path = ':/plugins/pfafstettertools/images/check.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Hydronet Check & Flip (by Jeronimo Carranza). \nSelect prior the outfall arcs in the active layer.'),
-            callback=self.checkandflip,
-            parent=self.iface.mainWindow())
 
         icon_path = ':/plugins/pfafstettertools/images/Incremental.png'
         self.add_action(
@@ -435,8 +429,14 @@ class pfafsteter:
             text=self.tr(u'Incremental Area Tool'),
             callback=self.incremental,
             parent=self.iface.mainWindow())
-
-
+        '''
+        icon_path = ':/plugins/pfafstettertools/images/check.png'
+        self.add_action(
+            icon_path,
+            text=self.tr(u'Hydronet Check & Flip (by Jeronimo Carranza). \nSelect prior the outfall arcs in the active layer.'),
+            callback=self.checkandflip,
+            parent=self.iface.mainWindow())
+        '''
         self.drainageCombo.layerChanged.connect(self.drainageChange)
 
         # will be set False in run()
@@ -799,7 +799,7 @@ class pfafsteter:
                 activeLayer.selectByExpression(str(q))
                 self.iface.actionZoomToSelected().trigger()
             pass
-
+    '''
     def checkandflip(self):
         """Run method that performs all the real work
         """
@@ -848,6 +848,8 @@ class pfafsteter:
         tocheck = []
         checked = []
         flipped = []
+
+        pass
 
 
     def checkarc(self, arc, index, layer):
@@ -901,7 +903,7 @@ class pfafsteter:
                 return(True)
                 break
         return(False)
-
+    '''
     def incrementalChange(self):
         self.dlg.attributeCB.setLayer(self.dlg.layerCB.currentLayer())
         self.dlg.codeCB.setLayer(self.dlg.layerCB.currentLayer())
@@ -939,9 +941,6 @@ class pfafsteter:
                 gdfUHE.at[ind, 'COB'] = str(cobacia)
                 cocurso = COC(cobacia)
                 gdfUHE.at[ind, 'COCURSO'] = str(cocurso)
-            #print(gdfUHE['COB'])
-            #print(gdfUHE['COCURSO'])
-
             gdfUHECopy = gdfUHE.copy()
             gdfUHE['incremental']=''
             for index, row in gdfUHECopy.iterrows():
@@ -971,23 +970,13 @@ class pfafsteter:
                 layer.updateFields()
                 attID = layer.fields().indexFromName("attrInc")
                 features=layer.getFeatures()
-                #layer.startEditing()
-                #print (gdfUHE['incremental'])
+
                 for f in features:
                     cobacia2 = f[codeField]
-                    #print(cobacia2)
                     incrementalArea = gdfUHE.loc[gdfUHE['COB']==cobacia2, 'incremental'].values[0]
-                    print('incre = '+ str( incrementalArea))
                     fid = f.id()
-
-                    #attrValue = {attID:incrementalArea}
                     layer.changeAttributeValue(fid, attID, incrementalArea)
 
-                    #layerProvider.changeAttributeValues({fid : attrValue})
-                    #layer.updateFields()
-                    #f['attrInc'] = incrementalArea
-                    print('f = ' + str( f['attrInc']))
-                    #layer.updateFeature(f)
-                #layer.commitChanges()
             QgsProject.instance().reloadAllLayers()
+            self.iface.messageBar().pushMessage(u'Incremental Area Tool finished!!', level=Qgis.Info, duration=3)
             pass
