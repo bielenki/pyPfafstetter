@@ -55,6 +55,6 @@ From this combobox select the attribute table field that you want to accumulate 
 **Button Incremental Area tool**
 ![button6](https://github.com/bielenki/pyPfafstetter/blob/main/fig/button6.png?raw=true)
 
-![bar6](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar6.png?raw=true)
+![bar9](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar9.png?raw=true)
   
 It accumulates a given attribute from upstream to downstream, adding a new layer to the project that is a copy of the drainage network layer added to a field in the attribute table that is the accumulated value of the attribute selected from the Attribute combobox. The added field receives the name of the selected field plus the suffix “_Accum”.
