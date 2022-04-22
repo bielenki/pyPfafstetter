@@ -57,4 +57,4 @@ From this combobox select the attribute table field that you want to accumulate 
 
 ![bar9](https://github.com/bielenki/pyPfafstetter/blob/main/fig/bar9.png?raw=true)
   
-It accumulates a given attribute from upstream to downstream, adding a new layer to the project that is a copy of the drainage network layer added to a field in the attribute table that is the accumulated value of the attribute selected from the Attribute combobox. The added field receives the name of the selected field plus the suffix “_Accum”.
+It gives an incremental value of a given attribute accumulation upstream to downstream, discounting accumulated values at specified points upstream.
